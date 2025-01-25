@@ -47,7 +47,10 @@ let%test "Testing safe_divide..." =
    returns a [string option] that is:
    - [Some x], where x is the concatenation of the two strings, if they both exist
    - [None] if either of the strings is [None]  *)
-let option_concatenate string1 string2 = failwith "For you to implement" 
+let option_concatenate string1 string2 = 
+  match string1, string2 with
+  | None, _ | _, None -> None
+  | Some x, Some y -> Some (x ^ y)
 
 let%test "Testing option_concatenate..." =
   match option_concatenate (Some "hello") (Some "world") with
@@ -119,8 +122,9 @@ let labeled_concatenate ?(separator = "")  ~string1 ~string2 =
   string1 ^ separator ^ string2
 
 (* Try uncommenting this code. What is the compile error? *)
-(* let () = 
- *   assert (String.(=) "hi" (labeled_concatenate ~string1:"h" ~string2:"i")) *)
+let () = 
+  [?separator:None]
+  assert (String.(=) "hi" (labeled_concatenate  ~string1:"h" ~string2:"i"))
 
 (* This is because optional arguments can only be safely omitted if there's an
    unlabeled, non-optional argument after the optional argument in the function

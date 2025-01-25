@@ -43,7 +43,7 @@ let () =
 
 (* Try uncommenting this line of code. What does the compiler tell you? *)
 (* let () = 
- *   assert (Example.a_secret_value = 17)  *)
+  assert (Example.a_secret_value = 17)  *)
     
 (* Types can be exposed via signatures in OCaml as well. Here's an example of
    declaring an "abstract" type - one where the definition of the type is not
@@ -81,6 +81,8 @@ module Fraction : sig
   (* Now, add signatures for the create and value functions to expose them in
      the [Fraction] module. Note that you shouldn't need to change any of the
      underlying implementation, nor change anything about how [t] is exposed. *)
+  val create: numerator: int -> denominator: int -> t
+  val value: t -> float
 end = struct
   type t = int * int
 
