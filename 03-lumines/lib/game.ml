@@ -36,20 +36,26 @@ let can_move t ~row ~col =
      corner is at [row] [col] will cause the board to be invalid
      either because the piece will collide with a filled-in square on
      the board or because it runs off the board *)
-  ignore row;
-  ignore col;
-  ignore t;
-  false
+     if row < 0 || col < 0 || col > t.width - 2
+      then false
+      else (
+        let coords = Moving_piece.coords ~bottom_left:{ Point.row; col } in
+        List.fold coords ~init:true ~f:(fun can_move point ->
+            if point.Point.row >= t.height
+            then can_move
+            else Board.is_empty t.board point && can_move))
 ;;
 
 let move_left t =
   (* TODO: Move the active piece left one square *)
-  ignore t
+  if can_move t ~row:t.moving_piece_row ~col:(t.moving_piece_col - 1)
+    then t.moving_piece_col <- t.moving_piece_col - 1
 ;;
 
 let move_right t =
   (* TODO: Move the active piece right one square *)
-  ignore t
+  if can_move t ~row:t.moving_piece_row ~col:(t.moving_piece_col + 1)
+    then t.moving_piece_col <- t.moving_piece_col + 1
 ;;
 
 let rotate_right t = t.moving_piece <- Moving_piece.rotate_right t.moving_piece
@@ -61,7 +67,12 @@ let drop t =
 
      Note: Depending on your implementation, you might need to check if the game
      is over here.  *)
-  ignore t
+  if Board.add_piece_and_apply_gravity
+          t.board
+          ~moving_piece:t.moving_piece
+          ~col:t.moving_piece_col
+  then new_moving_piece t
+  else t.game_over := true
 ;;
 
 let tick t =
@@ -71,7 +82,8 @@ let tick t =
      Note: We want to guarantee that the board is in a valid state at the end of
      [tick]. Depending on your implementation, you might need to check if the
      game is over here. *)
-  ignore t
+  if can_move t ~row:(t.moving_piece_row - 1) ~col:t.moving_piece_col
+    then t.moving_piece_row <- t.moving_piece_row - 1
 ;;
 
 (* Tests *)

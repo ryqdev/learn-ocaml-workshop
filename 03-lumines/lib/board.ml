@@ -21,7 +21,19 @@ let mark_squares_that_are_sweepable t =
 
      Note that, for example, a 2x3 rectangle of all the same color should also
      be marked by these criteria. *)
-  ignore t
+     List.iter (List.range 0 (t.height - 1)) ~f:(
+       fun row -> List.iter (List.range 0 (t.width - 1)) ~f:(
+         fun col -> match get t {row; col}, get t {row; col = col + 1}, get t {row = row + 1; col}, get t {row = row + 1; col = col + 1} with
+         | Some square1, Some square2, Some square3, Some square4 ->
+           if Color.equal square1.color square2.color && Color.equal square1.color square3.color && Color.equal square1.color square4.color
+             then (
+               square1.sweeper_state <- Filled_square.Sweeper_state.To_sweep;
+               square2.sweeper_state <- Filled_square.Sweeper_state.To_sweep;
+               square3.sweeper_state <- Filled_square.Sweeper_state.To_sweep;
+               square4.sweeper_state <- Filled_square.Sweeper_state.To_sweep
+             )
+         | _ -> ())
+     )
 ;;
 
 let remove_squares t =
@@ -32,16 +44,39 @@ let remove_squares t =
      At the end of this function, we should call
      [mark_squares_that_are_sweepable] so that we ensure that we leave the board
      in a valid state.  *)
-  ignore (mark_squares_that_are_sweepable t)
+  List.iter (List.range 0 t.height) ~f:(fun row ->
+      List.iter (List.range 0 t.width) ~f:(fun col ->
+          match get t {row; col} with
+          | None -> ()
+          | Some square -> if Filled_square.Sweeper_state.equal square.sweeper_state Filled_square.Sweeper_state.To_sweep
+            then set t {row; col} None));
+  mark_squares_that_are_sweepable t
+
 ;;
 
 let add_piece_and_apply_gravity t ~moving_piece ~col =
   (* TODO: insert (affix) the moving piece into the board, applying gravity
      appropriately. Make sure to leave the board in a valid state. *)
-  ignore t;
-  ignore moving_piece;
-  ignore col;
-  true
+  let find ~col = 
+    List.find (List.range 0 t.height) ~f:(
+      fun row -> match get t {row; col} with
+      | None -> true
+      | Some _ -> false)
+  in
+  let find_left = find ~col:col in
+  let find_right = find ~col:(col + 1) in
+  match find_left, find_right with
+  | None, _ | _, None -> false
+  | Some left_row, Some right_row ->
+    if left_row < t.height - 1 && right_row < t.height - 1
+      then (
+        set t {row = left_row; col} (Some moving_piece.Moving_piece.bottom_left);
+        set t {row = left_row + 1; col} (Some moving_piece.Moving_piece.top_left);
+        set t {row = right_row; col = col + 1} (Some moving_piece.Moving_piece.bottom_right);
+        set t {row = right_row + 1; col = col + 1} (Some moving_piece.Moving_piece.top_right);
+        true
+      )
+    else false
 ;;
 
 let is_empty t point =
