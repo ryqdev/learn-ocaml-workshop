@@ -28,7 +28,8 @@ let apple t = t.apple
 let game_state t = t.game_state
 
 (* TODO: Implement [set_direction]. *)
-let set_direction t direction = ()
+let set_direction t direction =
+  t.snake <- Snake.set_direction t.snake direction
 
 (* TODO: Implement [step].
 
@@ -38,7 +39,21 @@ let set_direction t direction = ()
    - if necessary:
      -- consume apple
      -- if apple cannot be regenerated, win game; otherwise, grow the snake *)
-let step t = ()
+let step t =
+  match Snake.step t.snake with
+  | None -> t.game_state <- Game_state.Game_over "Self collision"
+  | Some new_snake ->
+    let head = Snake.head_location new_snake in
+    if not (in_bounds t head) then
+      t.game_state <- Game_state.Game_over "Wall collision"
+    else (
+      t.snake <- new_snake;
+      if [%compare.equal: Position.t] head (Apple.location t.apple) then (
+        t.snake <- Snake.grow_over_next_steps new_snake t.amount_to_grow;
+        let invalid_locations = Snake.locations t.snake in
+        match Apple.create ~height:t.height ~width:t.width ~invalid_locations with
+        | None -> t.game_state <- Game_state.Win
+        | Some new_apple -> t.apple <- new_apple))
 
 module For_testing = struct
   let create_apple_force_location_exn ~height ~width ~location =
