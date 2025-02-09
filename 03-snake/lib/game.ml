@@ -1,9 +1,9 @@
 open! Base
 
 type t =
-  { mutable snake : Snake.t
+  { snake : Snake.t
   ; mutable apple : Apple.t
-  ; mutable game_state : Game_state.t
+  ; game_state : Game_state.t
   ; height : int
   ; width : int
   ; amount_to_grow : int
@@ -11,7 +11,11 @@ type t =
 [@@deriving sexp_of]
 
 (* TODO: Implement [in_bounds]. *)
-let in_bounds t position = failwith "For you to implement"
+let in_bounds t position =
+  position.Position.row >= 0
+  && position.Position.row < t.height
+  && position.Position.col >= 0
+  && position.Position.col < t.width
 
 (* TODO: Implement [create].
 
@@ -20,7 +24,30 @@ let in_bounds t position = failwith "For you to implement"
    unsuccessful, and "unable to create initial snake" if the initial snake is invalid
    (i.e. goes off the board). *)
 let create ~height ~width ~initial_snake_length ~amount_to_grow =
-  failwith "For you to implement"
+  let snake = Snake.create ~length:initial_snake_length in
+  (* Check if any part of snake is out of bounds *)
+  let temp_game =
+    { height
+    ; width
+    ; snake
+    ; apple = Apple.create ~height ~width ~invalid_locations:[] |> Option.value_exn
+    ; game_state = Game_state.In_progress
+    ; amount_to_grow
+    }
+  in
+  if not (List.for_all (Snake.locations snake) ~f:(in_bounds temp_game))
+  then failwith "unable to create initial snake";
+  (* Try to create apple avoiding snake locations *)
+  match Apple.create ~height ~width ~invalid_locations:(Snake.locations snake) with
+  | None -> failwith "unable to create initial apple"
+  | Some apple ->
+    { height
+    ; width
+    ; snake
+    ; apple
+    ; game_state = Game_state.In_progress
+    ; amount_to_grow
+    }
 ;;
 
 let snake t = t.snake

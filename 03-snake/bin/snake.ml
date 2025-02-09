@@ -10,7 +10,7 @@ let every seconds ~f ~stop =
     if !stop
     then return ()
     else
-      Clock.after (Time.Span.of_sec seconds)
+      Clock.after (Time_float.Span.of_sec seconds)
       >>= fun () ->
       f ();
       loop ()
@@ -51,5 +51,5 @@ let run () =
 
 let () =
   run ();
-  Core_kernel.never_returns (Async.Scheduler.go ())
+  Core.never_returns (Async.Scheduler.go ())
 ;;

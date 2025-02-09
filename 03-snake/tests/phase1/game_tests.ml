@@ -45,7 +45,7 @@ let%expect_test "Testing [Game.create] failure..." =
         create ~height:1 ~width:2 ~initial_snake_length:3 ~amount_to_grow:3)
   in
   Stdio.printf !"%{sexp: t Or_error.t}\n%!" t;
-  [%expect {| (Error (Failure "unable to create initial apple")) |}]
+  [%expect {| (Error (Failure "unable to create initial snake")) |}]
 ;;
 
 let%expect_test "Testing [Game.create] failure..." =
