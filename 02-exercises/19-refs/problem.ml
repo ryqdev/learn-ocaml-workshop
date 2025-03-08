@@ -1,5 +1,4 @@
 open! Base
-
 (* It is sometimes useful to create a single mutable value. We can do this using
    a [ref]. We can create an [int ref] containing 0 as follows. *)
 let x = ref 0
@@ -18,8 +17,17 @@ let () =
    let's iterate over the list and explicitly maintain refs of the minimum and
    maximum values seen so far instead. *)
 let min_and_max lst =
-  failwith "For you to implement"
-
+   match lst with
+   | [] -> failwith "Empty list"
+   | hd :: tl -> 
+      let min_ = ref hd in 
+      let max_ = ref hd in 
+      List.iter tl ~f:(fun x ->
+         if x < !min_ then min_ := x
+         else if x > !max_ then max_ := x
+         );
+   !min_, !max_
+;;
 (* By the way, can you guess how a [ref] is implemented under the hood? 
 
    (Hint: exercise 18.) *)
